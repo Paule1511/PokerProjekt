@@ -1,0 +1,10 @@
+body{
+    background-color: #333;
+}
+
+#game{
+    background-color: #080;
+}
+#game::after{
+    
+}
