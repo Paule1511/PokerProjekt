@@ -8,8 +8,10 @@
     <script src="script.js"></script>
 </head>
 <body>
-    <div id="title" class="main-text">
-        <h1> POKER NAME PLACHOLDER</h1>
+    <div id='header'>
+        <div id='balance'>d</div>
+        <div><h1> POKER NAME PLACHOLDER</h1></div>
+        <div>Login</div>
     </div>
     <div id="description" class="main-text">
         <p>

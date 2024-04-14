@@ -57,3 +57,14 @@ body{
     padding: 10px;
     border-radius: 10px;
 }
+#header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 15px;
+    background-color: #000;
+    color: #fff;
+}
+accountBtn{
+    
+}
