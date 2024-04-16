@@ -23,10 +23,67 @@ body{
     transform: translate(-50%, -50%);
     background: radial-gradient(#080, #030);
 }
+
+
+#table::after{
+    content: '';
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-size: cover;
+    background-image: url('table_layout.svg');
+    z-index: 1;
+}
+
+#pot{
+    position: absolute;
+    color: white;
+    background-color: rgba(0,0,0,0.3);
+    width: 30%;
+    font-size: 20px;
+    top: 25%;
+    left: 50%;
+    padding: 10px;
+    border-radius: 100px;
+    transform: translate(-50%, -50%);
+}
+
 #players .entity{
     position: absolute;
     offset-path: inset(0 0 0 0 round 100vh);
     offset-rotate: 0deg;
+}
+
+.entity .playButton{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    width: 20%;
+    aspect-ratio: 1/1;
+    top: 30%;
+    left: 60%;
+    padding: 2px;
+    border-width: 3px;
+    border-radius: 50%;
+    &.small{
+        background-color: blue;
+        border-style: solid;
+        border-color: #000;
+        color: #fff;
+    }
+    &.big{
+        background-color: yellow;
+        border-style: solid;
+        border-color: #000;
+        color: #000;
+    }
+    &.dealer{
+        background-color: white;
+        border-style: solid;
+        border-color: #000;
+        color: #000;
+    }
 }
 
 .entity{

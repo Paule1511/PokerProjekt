@@ -1,4 +1,7 @@
 const DEFAULT_IMG = "default_player.svg";
+turn = 0;
+blindIdx = 0;
+pot = 0;
 
 class player{
     #hand = Array(null, null);
@@ -57,6 +60,7 @@ function buildPage(enemies, player){
         }
         drawEnemy(enemies[i], i, enemies.length);
     }
+    
 }
 
 function drawEnemy(enemy, i, enemCount){
@@ -90,6 +94,7 @@ function drawPlayer(player){
         "<span>" + player.getName() + "</span>\n" +
         "<span class='money'>" + player.getMoney() + "</span>"+
         "<div class='cards'></div>" +
+        "<div class='playButton'></div>" +
         "</div>";
     enemHtml = document.getElementById('player');
     enemHtml.style.offsetDistance = 100/10*4+18.5 + "%";
