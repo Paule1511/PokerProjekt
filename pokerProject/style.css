@@ -1,0 +1,70 @@
+body{
+    margin: 0;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-image: linear-gradient(#101010, #101050 100%);
+}
+.main-text{
+    text-align: center;
+    color: white;
+    text-shadow: #f900f9 1px 0 10px;
+}
+.error{
+    text-align: center;
+    color: red;
+    margin: 5;
+    font-size: 15px;
+    font-weight: 500;
+    text-shadow: red 1px 0 20px;
+}
+#toPlay{
+    justify-content: space-between;
+    width: 20%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+}
+#regelButton{
+    background-color: #fff;
+    border-style: none;
+    border-radius: 20px;
+    padding: 10px;
+}
+#regelButton:hover{
+    background-color: #ccc;
+    cursor:pointer;
+}
+#regelButton:active{
+    background-color: #888;
+}
+#play{
+    background-color: #fff;
+    border-style: none;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 20px;
+}
+#play:hover{
+    background-color: #ccc;
+    cursor:pointer;
+}
+#play:active{
+    background-color: #888;
+}
+#enemCount{
+    margin: 5px;
+    border-style: none;
+    padding: 10px;
+    border-radius: 10px;
+}
+#header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 15px;
+    background-color: #000;
+    color: #fff;
+}
+accountBtn{
+    
+}
