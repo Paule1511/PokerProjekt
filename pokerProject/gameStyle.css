@@ -28,10 +28,13 @@ body{
 
 #table::after{
     content: '';
-    width: 100%;
-    height: 100%;
+    width: 120%;
+    height: 120%;
     position: absolute;
-    background-size: cover;
+    top: -25%;
+    left: -25%;
+    background-size: 125%;
+    background-repeat: no-repeat;
     background-image: url('table_layout.svg');
     z-index: 1;
 }
@@ -44,7 +47,7 @@ body{
     background-color: rgba(0,0,0,0.3);
     width: 30%;
     font-size: 20px;
-    top: 25%;
+    top: 20%;
     left: 50%;
     padding: 10px;
     border-radius: 100px;
@@ -93,8 +96,8 @@ body{
 }
 
 .cards{
-    --cardImg1: '';
-    --cardImg2: '';
+    --cardImg1: none;
+    --cardImg2: none;
     position: absolute;
     top: 0;
     left: 0;
@@ -148,7 +151,7 @@ body{
     border-color: black;
 }
 
-#turn{
+#tableText{
     position: absolute;
     top: 75%;
     left: 50%;
@@ -294,4 +297,24 @@ body{
     height: 30px;
     width: 5px;
     background-color: #090;
+}
+
+#communityCards{
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width:67.5%;
+    aspect-ratio: 2/1;
+}
+
+.community{
+    width: 20%;
+}
+
+.community img{
+    transform: translate(-175%, -115%);
+    scale: 20%;
 }

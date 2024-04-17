@@ -3,6 +3,8 @@ blindIdx = 1;
 input = "";
 inputAmount = 0;
 globalBet = 0;
+const scoreFunctions = new Array(getStraightFlushScore, getQuadsScore, getFullHouseScore,
+    getFlushScore, getStraightScore, getThreeScore, getTwoPairScore, getPairScore, getHandScore);
 
 function sleep(milis){
     return new Promise(resolve => setTimeout(resolve, milis));
@@ -23,6 +25,9 @@ class player{
     #blind = '';
     #bet = 0;
     #state = 'in';
+    #score = 0;
+    #winComb = new Array();
+    #winType = '';
     constructor(money, idx, name = null, img = null, isSelf = false){
         if(name !== null){
             this.#name = name;
@@ -50,10 +55,19 @@ class player{
                 playButtonElement.classList.add('small');
                 break;
         }
-
+    }
+    updateScoreAndComb(communityCards){
+        [this.#score, this.#winComb, this.#winType] = getCardsScore(this.#hand, communityCards);
+    }
+    getWinComb(){
+        return this.#winComb;
+    }
+    getWinType(){
+        return this.#winType;
     }
     fold(){
         this.#state = 'fold';
+        this.score = 0;
         document.getElementById(this.#htmlId).style.background = '#a00';
     }
     getState(){
@@ -79,6 +93,9 @@ class player{
             return;
         }
         this.#bet = bet;
+    }
+    getScore(){
+        return this.#score;
     }
     setHTMLID(htmlId){
         this.#htmlId = htmlId;
@@ -115,24 +132,65 @@ class player{
     }
 }
 
+function getCardsScore(hand, community){
+    var cards = hand.concat(community);
+    var winComb = new Array();
+    var winType = '';
+    var i = 0;
+    var score = 0;
+    while(true){
+        [score, winComb] = scoreFunctions[i++](cards);
+        if(score > 0){
+            break;
+        }
+    }
+    if(score == getRoyalStraightFlushMax()){
+        winType = 'royal';
+    }
+    if(score <= getStraightFlushMax() && score >= getStraightFlushMin()){
+        winType = 'straightFlush';
+    }
+    if(score <= getQuadsMax() && score >= getQuadsMin()){
+        winType = 'quads';
+    }
+    if(score <= getFullHouseMax() && score >= getFullHouseMin()){
+        winType = 'fullHouse';
+    }
+    if(score <= getStraightMax() && score >= getStraightMin()){
+        winType = 'straight';
+    }
+    if(score <= getThreeMax() && score >= getThreeMin()){
+        winType = 'three';
+    }
+    if(score <= getTwoPairMax() && score >= getTwoPairMin()){
+        winType = 'twoPair';
+    }
+    if(score <= getPairMax() && score >= getPairMin()){
+        winType = 'pair';
+    }
+    if(score <= getHandMax() && score >= getHandMin()){
+        winType = 'hand';
+    }
+    return [score, winComb, winType];
+}
+
 function errorFunction(){
-    console.log("Couldnt get Enemy Count");
     document.body.innerHTML = "Konnte Gegner Menge nicht erhalten";
 }
 
 function buildPage(enemies, player){
-    for(i = 0; i < enemies.length; i++){
-        drawEnemy(enemies[i], i, enemies.length);
+    for(var i = 0; i < enemies.length; i++){
+        drawEnemy(enemies[i], i);
     }
     drawPlayer(player);
     
 }
 
-function drawEnemy(enemy, i, enemCount){
+function drawEnemy(enemy, i){
     if(enemy.getName() == "-1"){
-        enemName = "Bot#" + (i + 1);
+        var enemName = "Bot#" + (i + 1);
     }else{
-        enemName = enemy.getName();
+        var enemName = enemy.getName();
     }
 
     document.getElementById('players').innerHTML += 
@@ -148,7 +206,7 @@ function drawEnemy(enemy, i, enemCount){
         "</div>" +
         "</div>";
     
-    htmlElement = document.getElementById('enemy' + i);
+    var htmlElement = document.getElementById('enemy' + i);
     if(i >= 4){
         htmlElement.style.offsetDistance = 100/10*(i+1)+18.5 + "%";
     }else{
@@ -169,15 +227,15 @@ function drawPlayer(player){
         '<img src="jeton.svg" alt="jeton">' +
         "</div>" +
         "</div>";
-    htmlElement = document.getElementById('player');
+    var htmlElement = document.getElementById('player');
     htmlElement.style.offsetDistance = 100/10*4+18.5 + "%";
     player.setHTMLID('player');
 }
 
 function createBots(enemCount){
-    enemies = Array();
+    var enemies = new Array();
     if(enemCount !== null){
-        for(i = 1; i <= enemCount; i++){
+        for(var i = 1; i <= enemCount; i++){
             if(i >= 5){
                 enemies.push(new player(1000, i+1));
             }else{
@@ -191,10 +249,10 @@ function createBots(enemCount){
 }
 
 function sortByEntityIdx(entityList){
-    for(i = 0; i < entityList.length; i++){
-        for(j = 0; j < entityList.length-1; j++){
+    for(var i = 0; i < entityList.length; i++){
+        for(var j = 0; j < entityList.length-1; j++){
             if(entityList[j].getIndex() > entityList[j+1].getIndex()){
-                temp = entityList[j];
+                var temp = entityList[j];
                 entityList[j] = entityList[j+1];
                 entityList[j+1] = temp;
             }
@@ -203,29 +261,43 @@ function sortByEntityIdx(entityList){
 }
 
 function setEntityBlinds(entityList){
-    for(i=0; i < entityList.length; i++){
+    for(var i=0; i < entityList.length; i++){
         entityList[i].setBlind('');
     }
     entityList[blindIdx%entityList.length].setBlind('BB');
     entityList[(blindIdx-1)%entityList.length].setBlind('SB');
 }
 
-function showTurn(turn){
-    turnElement = document.getElementById('turn')
+function addComCard(){
+    var card = deck.shift(0);
+    communityCards.push(card);
+    document.getElementById('communityCards').innerHTML += '<div class="community">' +
+        '<img src="./cardsSVGs/' + cardToImgNameConv(card) + '.svg" alt="' + card + '">'+
+        '</div>';
+}
+
+function doTurn(turn){
+    var turnElement = document.getElementById('tableText')
     switch(turn){
         case 0:
             turnElement.innerHTML = "Pre-Flop";
             break;
         case 1:
+            for(var j = 0; j < 3; j++){
+                addComCard();
+            }
             turnElement.innerHTML = "Flop";
             break;
         case 2:
+            addComCard();
             turnElement.innerHTML = "Turn";
             break;
         case 3:
+            addComCard();
             turnElement.innerHTML = "River";
             break;
         case 4:
+            doShowdown();
             turnElement.innerHTML = "Showdown"
             break;
     }
@@ -233,11 +305,11 @@ function showTurn(turn){
 
 
 function toggleActionButton(button = null){
-    actionButtons = document.getElementsByClassName('actionButton');
+    var actionButtons = document.getElementsByClassName('actionButton');
     if(button != null && button.classList.contains('active')){
         button = null;
     }
-    for(j = 0; j < actionButtons.length; j++){
+    for(var j = 0; j < actionButtons.length; j++){
         if(actionButtons[j].classList.contains('active')){
             actionButtons[j].classList.replace('active', 'unactive');
         }
@@ -261,7 +333,7 @@ function toggleActionButton(button = null){
 
 
 function setTurn(entity, isTurn){
-    htmlElement = document.getElementById(entity.getHTMLID());
+    var htmlElement = document.getElementById(entity.getHTMLID());
     if(isTurn){
         htmlElement.classList.add('onTurn');
     }else{
@@ -275,25 +347,24 @@ function calculateAction(entity){
 
 function drawPlayerCards(entity, canSee){
     if(canSee){
-        cards = entity.getHand();
+        var cards = entity.getHand();
     }else{
-        cards = ['B1', 'B1'];
+        var cards = ['B1', 'B1'];
     }
     if(cards[0] != 0 && cards[1] != 0){
         htmlElement = document.getElementById(entity.getHTMLID()).getElementsByClassName('cards')[0];
-        console.log('url(./cardsSVGs/' + cardToImgNameConv(cards[0]) + '.svg)')
         htmlElement.style.setProperty('--cardImg1', 'url(./cardsSVGs/' + cardToImgNameConv(cards[0]) + '.svg)');
         htmlElement.style.setProperty('--cardImg2', 'url(./cardsSVGs/' + cardToImgNameConv(cards[1]) + '.svg)');
     }
 }
 
 async function getAction(resolve, entity, betTime){
-    action = ['fold', 0];
+    var action = ['fold', 0];
     setTurn(entity, true);
-    timer = 0;
+    var timer = 0;
     if(entity.getName() == '-1'){
         action = calculateAction(entity);
-        await sleep(500);
+        await sleep(100);
     }else{
         while(input == '' && timer <= betTime*1000){
             await sleep(10);
@@ -307,8 +378,8 @@ async function getAction(resolve, entity, betTime){
 }
 
 function updateBets(entityList){
-    for(j = 0; j < entityList.length; j++){
-        htmlElement = document.getElementById(entityList[j].getHTMLID());
+    for(var j = 0; j < entityList.length; j++){
+        var htmlElement = document.getElementById(entityList[j].getHTMLID());
         htmlElement.getElementsByClassName('betText')[0].innerHTML = entityList[j].getBet();
         if(entityList[j].getBet() > 0){
             htmlElement.getElementsByClassName('bet')[0].style.visibility = 'visible';
@@ -319,8 +390,8 @@ function updateBets(entityList){
 }
 
 function updateMoney(entityList){
-    for(let i = 0; i < entityList.length; i++){
-        htmlElement = document.getElementById(entityList[i].getHTMLID());
+    for(var i = 0; i < entityList.length; i++){
+        var htmlElement = document.getElementById(entityList[i].getHTMLID());
         htmlElement.getElementsByClassName('money')[0].innerHTML = entityList[i].getMoney();
     }
 }
@@ -350,7 +421,7 @@ function updatePot(pot){
 }
 
 function updateTable(entityList, pot){
-    for(j = 0; j < entityList.length; j++){
+    for(var j = 0; j < entityList.length; j++){
         entityList[j].setBet(0);
     }
     updateEntitys(entityList);
@@ -358,7 +429,7 @@ function updateTable(entityList, pot){
 }
 
 function removeAllCards(entityList){
-    for(j = 0; j < entityList.length; j++){
+    for(var j = 0; j < entityList.length; j++){
         htmlElement = document.getElementById(entityList[j].getHTMLID());
         htmlElement.style.setProperty('--cardImg1', '');
         htmlElement.style.setProperty('--cardImg2', '');
@@ -366,19 +437,34 @@ function removeAllCards(entityList){
 }
 
 function giveCards(deck, entityList, handIdx){
-    for(i = 0; i < entityList.length; i++){
+    for(var i = 0; i < entityList.length; i++){
         entityList[i].setHand(handIdx, deck.shift());
     }
 }
 
+function resetComCards(){
+    document.getElementById('communityCards').innerHTML = '';
+}
+
+function setWinner(entity, pot){
+    console.log(entity.getScore())
+    console.log(entity.getWinComb())
+    var htmlElement = document.getElementById(entity.getHTMLID());
+    document.getElementById('tableText').innerHTML = entity.getWinType();
+    htmlElement.style.background = '#0f0';
+    drawPlayerCards(entity, true);
+    entity.addMoney(pot);
+}
+
 async function game(resolve, entityList, blind){
-    pot = 0;
-    turn = 0;
-    bet = blind;
+    communityCards = new Array();
+    var pot = 0;
+    var turn = 0;
+    var bet = blind;
     globalBet = bet;
     sortByEntityIdx(entityList);
     setEntityBlinds(entityList);
-    for(i = 0; i < entityList.length; i++){
+    for(var i = 0; i < entityList.length; i++){
         if(entityList[i].getBlind() == 'BB'){
             entityList[i].setBet(blind);
         }else if(entityList[i].getBlind() == 'SB'){
@@ -387,25 +473,25 @@ async function game(resolve, entityList, blind){
     }
     giveCards(deck, entityList, 0);
     giveCards(deck, entityList, 1);
-    for(i = 0; i < entityList.length; i++){
+    for(var i = 0; i < entityList.length; i++){
         if(entityList[i].isSelf()){
             drawPlayerCards(entityList[i], true);
         }else{
             drawPlayerCards(entityList[i], false);
         }
     }
-    lastBetIdx = blindIdx+1;
-    startIdx = blindIdx+1;
+    var lastBetIdx = blindIdx+1;
+    var startIdx = blindIdx+1;
     while(turn < 4){
-        showTurn(turn);
-        for(i = startIdx; i < entityList.length+lastBetIdx; i++){
-            let entity = entityList[i%entityList.length];
+        doTurn(turn);
+        for(var i = startIdx; i < entityList.length+lastBetIdx; i++){
+            var entity = entityList[i%entityList.length];
             updateEntitys(entityList);
             if(entity.getState() == 'fold'){
                 continue;
             }
-            currAction = new Promise(resolve => getAction(resolve, entity, 5));
-            action = await currAction.then(function(out){ return out});
+            var currAction = new Promise(resolve => getAction(resolve, entity, 5));
+            var action = await currAction.then(function(out){ return out});
             
             if(action[0] == 'raise'){
                 lastBetIdx = i;
@@ -421,11 +507,20 @@ async function game(resolve, entityList, blind){
         lastBetIdx = 0;
         turn++;
     }
+    var winIdx = 0;
+    for(var i = 0; i < entityList.length; i++){
+        entityList[i].updateScoreAndComb(communityCards);
+        if(entityList[i].getScore() > entityList[winIdx].getScore()){
+            winIdx = i;
+        }
+    }
+    setWinner(entityList[winIdx], pot);
+    updateTable(entityList, 0);
     resolve();
 }
 
 function toggleRaiseBar(on){
-    raiseBar = document.getElementById('raiseBar');
+    var raiseBar = document.getElementById('raiseBar');
     if(on){
         raiseBar.style.visibility = 'visible';
     }else{
@@ -434,20 +529,20 @@ function toggleRaiseBar(on){
 }
 
 function addListeners(){
-    actionButtons = document.getElementsByClassName('actionButton');
-    for(i = 0; i < actionButtons.length; i++){
+    var actionButtons = document.getElementsByClassName('actionButton');
+    for(var i = 0; i < actionButtons.length; i++){
         actionButtons[i].addEventListener('click', function(){
             toggleActionButton(this);
         })
     }
-    raiseRange = document.getElementById('raiseRange');
-    raiseText = document.getElementById('raiseAmount');
+    var raiseRange = document.getElementById('raiseRange');
+    var raiseText = document.getElementById('raiseAmount');
     raiseText.innerHTML = raiseRange.value;
     raiseRange.addEventListener('input', function(){
         raiseRange.style.setProperty('--amount', raiseRange.value/raiseRange.getAttribute('max')*100 + "%");
         raiseText.innerHTML = raiseRange.value;
     })
-    raiseConfirm = document.getElementById('raiseConfirm');
+    var raiseConfirm = document.getElementById('raiseConfirm');
     raiseConfirm.addEventListener('click', function(){
         inputAmount = raiseRange.value;
         input = 'raise'
@@ -460,35 +555,35 @@ function cloneArray(arr){
 }
 
 function backIntoGame(entityList){
-    for(j = 0; j < entityList.length; j++){
+    for(var j = 0; j < entityList.length; j++){
         entityList[j].backIn();
     }
 }
 
 addEventListener('DOMContentLoaded', function(){
+    var blindIdx = 0;
     const params = new URLSearchParams(window.location.search);
-    enemies = createBots(parseInt(params.get('enemCount')));
-    self = new player(1000, 5, 'Paul', null, true); 
+    var enemies = createBots(parseInt(params.get('enemCount')));
+    var self = new player(1000, 5, 'Paul', null, true); 
     if(enemies == null){
         errorFunction();
         return;
     }
-    entityList = enemies.concat(self);
+    var entityList = enemies.concat(self);
     buildPage(enemies, self);
     addListeners();
     document.getElementById('start').addEventListener('click',async function(){
         this.parentElement.removeChild(this);
         while(true){
             deck = getNewDeck();
-            console.log(deck);
-            blind = 50;
-            currGame = new Promise(resolve => game(resolve, entityList, blind));
+            var blind = 50;
+            var currGame = new Promise(resolve => game(resolve, entityList, blind));
             await currGame
             blindIdx = (++blindIdx)%entityList.length;
+            await sleep(10000);
+            resetComCards();
             removeAllCards(entityList);
             backIntoGame(entityList);
-            await sleep(1000);
         }
     })
-    console.log("test")
 })

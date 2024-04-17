@@ -6,22 +6,36 @@ const SUITS = Array('H', 'D', 'S', 'C');
 
 //Max Funktionen zur erhaltung der Max werte jedes hand ranges
 function getFlushMax(){
-    [score, comb] = getFlushScore(['HA', 'HK', 'HQ', 'HJ', 'HT']);
+    var [score, comb] = getFlushScore(['HA', 'HK', 'HQ', 'HJ', 'HT']);
     return score;
 }
 
 function shuffle(deck){
-    for(i = 0; i < deck.length; i++){
-        j = Math.floor(Math.random() * (i+1));
+    for(var i = 0; i < deck.length; i++){
+        var j = Math.floor(Math.random() * (i+1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
     }
 }
 
+function getHandScore(hand){
+   var score = 0;
+    hand.map((card) =>score += getRanksIndex(card));
+    return score;
+}
+
+function getHandMin(){
+    return getHandScore(['C2', 'H3']);
+}
+
+function getHandMax(){
+    return getHandScore(['HA', 'CK']);
+}
+
 function getNewDeck(){
-    deck = new Array();
-    for(i = 0; i < RANKS.length; i++){
-        for(j = 0; j < SUITS.length; j++){
-            card = SUITS[j] + RANKS[i];
+    var deck = new Array();
+    for(var i = 0; i < RANKS.length; i++){
+        for(var j = 0; j < SUITS.length; j++){
+            var card = SUITS[j] + RANKS[i];
             deck.push(card);
         }
     }
@@ -30,84 +44,84 @@ function getNewDeck(){
 }
 
 function getPairMax(){
-    [score, comb] = getPairScore(['HA', 'SA']);
+    var [score, comb] = getPairScore(['HA', 'SA']);
     return score;
 }
 
 function getTwoPairMax(){
-    [score, comb] = getPairAndTwoPairScore(['HA', 'SA', 'CK', 'DK']);
+    var [score, comb] = getTwoPairScore(['HA', 'SA', 'CK', 'DK']);
     return score;
 }
 
 function getFullHouseMax(){
-    [score, comb] = getFullHouseScore(['HA', 'SA', 'CA', 'SK', 'CK']);
+    var [score, comb] = getFullHouseScore(['HA', 'SA', 'CA', 'SK', 'CK']);
     return score;
 }
 
 function getStraightMax(){
-    [score, comb] = getStraightScore(['HA', 'HK', 'HQ', 'HJ', 'HT']);
+    var [score, comb] = getStraightScore(['HA', 'HK', 'HQ', 'HJ', 'HT']);
     return score;
 }
 
 function getThreeMax(){
-    [score, comb] = getThreeScore(['HA', 'SA', 'CA']);
+    var [score, comb] = getThreeScore(['HA', 'SA', 'CA']);
     return score;
 }
 
 function getQuadsMax(){
-    [score, comb] = getQuadsScore(['HA', 'CA', 'SA', 'DA']);
+    var [score, comb] = getQuadsScore(['HA', 'CA', 'SA', 'DA']);
     return score;
 }
 
 function getRoyalStraightFlushMax(){
-    [score, comb] = getStraightFlushScore(['HA', 'HK', 'HQ', 'HJ', 'HT']);
+    var [score, comb] = getStraightFlushScore(['HA', 'HK', 'HQ', 'HJ', 'HT']);
     return score;
 }
 
 function getStraightFlushMax(){
-    [score, comb] = getStraightFlushScore(['HK', 'HQ', 'HJ', 'HT', 'H9']);
+    var [score, comb] = getStraightFlushScore(['HK', 'HQ', 'HJ', 'HT', 'H9']);
     return score;
 }
 
 //Min Funktionen zur erhaltung des minimal möglichsten Scores
 
 function getFlushMin(){
-    [score, comb] = getFlushScore(['HA', 'H2', 'H3', 'H4', 'H5']);
+    var [score, comb] = getFlushScore(['HA', 'H2', 'H3', 'H4', 'H5']);
     return score;
 }
 
 function getPairMin(){
-    [score, comb] = getPairScore(['H2', 'S2']);
+    var [score, comb] = getPairScore(['H2', 'S2']);
     return score;
 }
 
 function getTwoPairMin(){
-    [score, comb] = getPairAndTwoPairScore(['H2', 'S2', 'C3', 'D3']);
+    var [score, comb] = getTwoPairScore(['H2', 'S2', 'C3', 'D3']);
     return score;
 }
 
 function getFullHouseMin(){
-    [score, comb] = getFullHouseScore(['H2', 'S2', 'C2', 'S3', 'C3']);
+    var [score, comb] = getFullHouseScore(['H2', 'S2', 'C2', 'S3', 'C3']);
     return score;
 }
 
 function getStraightMin(){
-    [score, comb] = getStraightScore(['HA', 'H2', 'H3', 'H4', 'H5']);
+    var [score, comb] = getStraightScore(['HA', 'H2', 'H3', 'H4', 'H5']);
     return score;
 }
 
 function getThreeMin(){
-    [score, comb] = getThreeScore(['H2', 'S2', 'C2']);
+    var [score, comb] = getThreeScore(['H2', 'S2', 'C2']);
     return score;
 }
 
 function getQuadsMin(){
-    [score, comb] = getQuadsScore(['H2', 'C2', 'S2', 'D2']);
+    var [score, comb] = getQuadsScore(['H2', 'C2', 'S2', 'D2']);
     return score;
 }
 
 function getStraightFlushMin(){
-    [score, comb] = getStraightFlushScore(['HA', 'H2', 'H3', 'H4', 'H5']);
+    var [score, comb] = getStraightFlushScore(['HA', 'H2', 'H3', 'H4', 'H5']);
     return score;
 }
 
@@ -126,7 +140,7 @@ function sortCardsHighToLow(cardsArray){
     for(var i = 0; i < cardsArray.length; i++){
         for(var j = 0; j < cardsArray.length-1; j++){
             if(getRanksIndex(cardsArray[j]) < getRanksIndex(cardsArray[j+1])){
-                temp = cardsArray[j];
+                var temp = cardsArray[j];
                 cardsArray[j] = cardsArray[j+1];
                 cardsArray[j+1] = temp;
             }
@@ -136,8 +150,8 @@ function sortCardsHighToLow(cardsArray){
 
 //zählte wie oft ein Rang im Karten Array vor kommt und gibt ein Array mit häufigkeiten pro index zurück
 function countRanks(cardsArray){
-    listOfRankCounts = new Array(RANKS.length).fill(0);
-    for(i = 0; i < cardsArray.length; i++){
+    var listOfRankCounts = new Array(RANKS.length).fill(0);
+    for(var i = 0; i < cardsArray.length; i++){
         listOfRankCounts[getRanksIndex(cardsArray[i])]++
     }
     return listOfRankCounts;
@@ -145,8 +159,8 @@ function countRanks(cardsArray){
 
 //zählte wie oft eine farbe im Karten Array vor kommt und gibt ein Array mit häufigkeiten pro index zurück
 function countSuits(cardsArray){
-    listOfSuitsCounts = new Array(SUITS.length).fill(0);
-    for(i = 0; i < cardsArray.length; i++){
+    var listOfSuitsCounts = new Array(SUITS.length).fill(0);
+    for(var i = 0; i < cardsArray.length; i++){
         listOfSuitsCounts[getSuitsIndex(cardsArray[i])]++;
     }
     return listOfSuitsCounts;
@@ -154,7 +168,7 @@ function countSuits(cardsArray){
 
 //Gibt den Score (Summe von 5 höchsten karten des Flushes) zurück 
 function getScoreOfHighestFiveCardsOfFlush(cardsArray, targetSuit){
-    score = 0;
+    var score = 0;
     if(cardsArray.length > 4){
         sortCardsHighToLow(cardsArray);
         cardsArray.filter((card) => getSuitsIndex(card) == SUITS.indexOf(targetSuit)).slice(0, 5)
@@ -167,14 +181,15 @@ function getScoreOfHighestFiveCardsOfFlush(cardsArray, targetSuit){
 
 //TODO Dokumentation
 
-function getPairAndTwoPairScore(cardsArray){
+function getTwoPairScore(cardsArray){
     sortCardsHighToLow(cardsArray);
-    score = 0;
-    pairNumbers = new Array();
-    rankCounts = countRanks(cardsArray).reverse();
-    for(i = 0; i < 2; i++){
-        pairRankIdx = rankCounts.length-1 - rankCounts.indexOf(2); //Nach 2 von hinten suchen um den hohen rang zu erhalten
+    var score = 0;
+    var pairNumbers = new Array();
+    var rankCounts = countRanks(cardsArray).reverse();
+    for(var i = 0; i < 2; i++){
+        var pairRankIdx = rankCounts.indexOf(2); //Nach 2 von hinten suchen um den hohen rang zu erhalten
         if (pairRankIdx != -1){
+            pairRankIdx = rankCounts.length - 1 - pairRankIdx;
             pairNumbers.push(RANKS[pairRankIdx]);
             if (i == 1){
                 score += (pairRankIdx+1) * 100 + getPairMax();
@@ -182,7 +197,10 @@ function getPairAndTwoPairScore(cardsArray){
                 score += (pairRankIdx+1) * 100;
             }
         }
-        rankCounts[rankCounts.length - 1 - pairRankIdx] = 0;
+        rankCounts[rankCounts.length - 1 -pairRankIdx] = 0;
+    }
+    if(pairNumbers.length < 2){
+        return[0, []];
     }
     return [score, pairNumbers];
 }
@@ -190,11 +208,12 @@ function getPairAndTwoPairScore(cardsArray){
 //Gibt score und liste des höchsten Drillings zurueck
 function getPairScore(cardsArray){
     sortCardsHighToLow(cardsArray);
-    score = 0;
-    threeNumbers = new Array();
-    rankCounts = countRanks(cardsArray);
-    pairRankIdx = rankCounts.length-1 - rankCounts.reverse().indexOf(2);    //Nach 3 von hinten suchen um den hohen rang zu erhalten
+    var score = 0;
+    var threeNumbers = new Array();
+    var rankCounts = countRanks(cardsArray);
+    var pairRankIdx = rankCounts.reverse().indexOf(2);    //Nach 3 von hinten suchen um den hohen rang zu erhalten
     if (pairRankIdx != -1){
+        pairRankIdx = rankCounts.length - 1 - pairRankIdx;
         score = (pairRankIdx+1) * 100;
         threeNumbers.push(RANKS[pairRankIdx]);
     }
@@ -204,11 +223,12 @@ function getPairScore(cardsArray){
 //Gibt score und liste des höchsten Drillings zurueck
 function getThreeScore(cardsArray){
     sortCardsHighToLow(cardsArray);
-    score = 0;
-    threeNumbers = new Array();
-    rankCounts = countRanks(cardsArray);
-    pairRankIdx = rankCounts.length-1 - rankCounts.reverse().indexOf(3);    //Nach 3 von hinten suchen um den hohen rang zu erhalten
+    var score = 0;
+    var threeNumbers = new Array();
+    var rankCounts = countRanks(cardsArray);
+    var pairRankIdx = rankCounts.reverse().indexOf(3);    //Nach 3 von hinten suchen um den hohen rang zu erhalten
     if (pairRankIdx != -1){
+        pairRankIdx = rankCounts.length - 1 - pairRankIdx;
         score = (pairRankIdx+1) * 100 + getTwoPairMax();
         threeNumbers.push(RANKS[pairRankIdx]);
     }
@@ -218,10 +238,10 @@ function getThreeScore(cardsArray){
 //Gibt score und liste des Vierlings zurueck
 function getQuadsScore(cardsArray){
     sortCardsHighToLow(cardsArray);
-    score = 0;
-    quadNumbers = new Array();
-    rankCounts = countRanks(cardsArray);
-    pairRankIdx = rankCounts.indexOf(4);    //egal ob von hinten oder vorne. Man kann nur ein Vierling haben
+    var score = 0;
+    var quadNumbers = new Array();
+    var rankCounts = countRanks(cardsArray);
+    var pairRankIdx = rankCounts.indexOf(4);    //egal ob von hinten oder vorne. Man kann nur ein Vierling haben
     if (pairRankIdx != -1){
         score = (pairRankIdx+1) * 100 + getFullHouseMax();
         quadNumbers.push(RANKS[pairRankIdx]);
@@ -232,10 +252,10 @@ function getQuadsScore(cardsArray){
 //Gubt score und Farbe des Flushes zurück
 function getFlushScore(cardsArray){
     sortCardsHighToLow(cardsArray);
-    score = 0;
-    flushCards = new Array();
-    suitsCounts = countSuits(cardsArray);
-    flashSuitsIdx = suitsCounts.findIndex((suitCount) => suitCount > 4);
+    var score = 0;
+    var flushCards = new Array();
+    var suitsCounts = countSuits(cardsArray);
+    var flashSuitsIdx = suitsCounts.findIndex((suitCount) => suitCount > 4);
     if(flashSuitsIdx != -1){
         flushCards.push(SUITS[flashSuitsIdx]);
         score += getScoreOfHighestFiveCardsOfFlush(cardsArray, SUITS[flashSuitsIdx]) * 100 + 12500;
@@ -246,8 +266,8 @@ function getFlushScore(cardsArray){
 //Gibt Score und Karten des Full Houses zurück
 function getFullHouseScore(cardsArray){
     sortCardsHighToLow(cardsArray);
-    [score1, arr1] = getThreeScore(cardsArray);
-    [score2, arr2] = getPairScore(cardsArray);
+    var [score1, arr1] = getThreeScore(cardsArray);
+    var [score2, arr2] = getPairScore(cardsArray);
     if (score1 > 0 && score2 > 0){
         arr1.push(arr2[0]);
         return [score1*15 + score2 + getFlushMax(), arr1];
@@ -260,19 +280,19 @@ function getFullHouseScore(cardsArray){
 //TODO Tiefere Erklärung
 function getStraightScore(cardsArray){
     sortCardsHighToLow(cardsArray);
-    straight = new Array();
-    score = 0;
-    for (i = RANKS.length-1; i > -1; i--){
+    var straight = new Array();
+    var score = 0;
+    for (var i = RANKS.length-1; i > -1; i--){
         score = 0
-        straight = [];
+        var straight = [];
         if (cardsArray.findIndex((card) => card.indexOf(RANKS[i]) != -1) != -1 && i > 2){
             straight.push(RANKS[i]);
             score += i+1;
-            for (j = i-1; j > i-5; j--){
+            for (var j = i-1; j > i-5; j--){
                 if(j == -1){
-                    targetRank = RANKS[RANKS.length-1];
+                    var targetRank = RANKS[RANKS.length-1];
                 }else{  
-                    targetRank = RANKS[j];
+                    var targetRank = RANKS[j];
                 }
                 if(!(cardsArray.findIndex((card) => card.indexOf(targetRank) != -1) != -1)){
                     break;
@@ -293,16 +313,16 @@ function getStraightScore(cardsArray){
 
 //Gibt den Score für einen Straight Flush zurück
 function getStraightFlushScore(cardsArray){
-    cardArrOut = new Array();
-    [score, straightArr] = getStraightScore(cardsArray);
+    var cardArrOut = new Array();
+    var [score, straightArr] = getStraightScore(cardsArray);
     if( score > 0){
-        straightArr2 = new Array();
-        for(i = 0; i < straightArr.length; i++){ //erstellt eine neue liste der straßen ausgabe die die farben der karten enhält
+        var straightArr2 = new Array();
+        for(var i = 0; i < straightArr.length; i++){ //erstellt eine neue liste der straßen ausgabe die die farben der karten enhält
             straightArr2.push(...cardsArray.filter((card) => card.indexOf(straightArr[i]) != -1));
         }
-        [score2, flushArr] = getFlushScore(straightArr2);
+        var [score2, flushArr] = getFlushScore(straightArr2);
         if( score2 > 0){
-            for(i = 0; i < straightArr.length; i++){
+            for(var i = 0; i < straightArr.length; i++){
                 cardArrOut.push(...cardsArray.filter((card) => card.indexOf(straightArr[i]) != -1 
                     && card.indexOf(flushArr[0]) != -1));
             }
@@ -313,6 +333,9 @@ function getStraightFlushScore(cardsArray){
 }
 
 function testMinMax(){
+    max = getHandMax();
+    min = getHandMin();
+    console.log("Hand Range: ", min, " - ", max);
     max = getPairMax();
     min = getPairMin();
     console.log("Pair Range: ", min , " - " , max);
@@ -340,3 +363,5 @@ function testMinMax(){
     score = getRoyalStraightFlushMax();
     console.log("Royal Score: ", score)
 }
+
+testMinMax();
