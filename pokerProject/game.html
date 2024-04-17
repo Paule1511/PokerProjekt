@@ -9,9 +9,26 @@
 </head>
 <body>
     <div id="game">
+        <button id="start">START</button>
         <div id="table">
             <div id="players"></div>
-            <div id="pot">0</div>
+            <div id="pot">
+                <span id="potAmount">0</span>
+                <img src="jeton.svg" alt="jeton">
+            </div>
+            <span id="turn"></span>
+        </div>
+    </div>
+    <div id="buttons">
+        <div id="actionButtons">
+            <div id="raiseBar" style="visibility: hidden;">
+                <span id="raiseAmount"></span>
+                <input type="range" min="1" max="1000" id="raiseRange">
+                <button id="raiseConfirm">Raise</button>
+            </div>
+            <button id="fold" class="unactive actionButton">Fold</button>
+            <button id="call" class="unactive actionButton">Call</button>
+            <button id="raise" class="unactive actionButton">Raise</button>
         </div>
     </div>
 </body>

@@ -1,10 +1,11 @@
 body{
+    user-select: none;
     background-color: #333;
     overflow: hidden;
 }
 #game{
     position: absolute;
-    top: 50%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 80%;
@@ -37,6 +38,8 @@ body{
 
 #pot{
     position: absolute;
+    display: flex;
+    justify-content: space-between;
     color: white;
     background-color: rgba(0,0,0,0.3);
     width: 30%;
@@ -46,6 +49,14 @@ body{
     padding: 10px;
     border-radius: 100px;
     transform: translate(-50%, -50%);
+}
+#pot img{
+    width: 10%;
+    aspect-ratio: 1/1;
+}
+
+#pot #potAmount{
+    margin: auto;
 }
 
 #players .entity{
@@ -59,11 +70,12 @@ body{
     justify-content: center;
     align-items: center;
     position: absolute;
-    width: 20%;
     aspect-ratio: 1/1;
+    font-size: 15px;
+    width: 30%;
     top: 30%;
     left: 60%;
-    padding: 2px;
+    padding: 3px;
     border-width: 3px;
     border-radius: 50%;
     &.small{
@@ -78,16 +90,9 @@ body{
         border-color: #000;
         color: #000;
     }
-    &.dealer{
-        background-color: white;
-        border-style: solid;
-        border-color: #000;
-        color: #000;
-    }
 }
 
 .entity{
-    user-select: none;
     color: #fff;
     width: 13%;
     border-radius: 10px;
@@ -108,4 +113,136 @@ body{
     aspect-ratio: 1/1;
     border-radius: 50%;
     width: 75%;
+    border-style: solid;
+    border-width: 2px;
+    border-color: black;
+}
+
+#turn{
+    position: absolute;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 20px;
+    text-align: center;
+}
+
+#start{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30%;
+    aspect-ratio: 10/3;
+    box-shadow: #000 0px 10px 7px;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    background: radial-gradient(#500 30%, #a00);
+    border-style: solid;
+    border-width: 10px;
+    padding: 10px;
+    border-radius: 100vh;
+    border-color: #555;
+    z-index: 3;
+    &:hover{
+        cursor: pointer;
+    }
+    &:active{
+        border-color: #999;
+        box-shadow: #000 0px 7px 3px;
+        background: radial-gradient(#a00 30%, #a00);
+    }
+}
+
+#buttons{
+    position: absolute;
+    width: 100%;
+    bottom: 100px;
+}
+
+#actionButtons{
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    position: absolute;
+}
+
+#actionButtons button.unactive{
+    border-style: solid;
+    border-width: 3px;
+    border-color: #999;
+    width: 20%;
+    padding: 15px;
+    border-radius: 100vh;
+    background: #070;
+    &:hover{
+        background-color: #090;
+    }
+}
+
+#actionButtons button.active{
+    border-style: solid;
+    border-width: 3px;
+    border-color: #999;
+    width: 20%;
+    padding: 15px;
+    border-radius: 100vh;
+    background: #070;
+    box-shadow: inset 0 0 20px black;
+}
+
+.onTurn{
+    background: red;
+}
+
+#raiseBar{
+    text-align: center;
+    position: absolute;
+    right: 10%;
+    width: 20%;
+    bottom: 75px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #000;
+    color: #dd0;
+    background-color: rgb(0,0,0);
+    padding: 5px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+}
+#raiseConfirm{
+    border-style: none;
+    background-color: #0a0;
+    border-radius: 5px;
+    padding: 3px;
+}
+
+#raiseConfirm:hover{
+    border-style: none;
+    background-color: #0c0;
+    border-radius: 5px;
+    padding: 3px;
+}
+
+#raiseConfirm:active{
+    border-style: none;
+    background-color: #0a0;
+    border-radius: 5px;
+    padding: 3px;
+    box-shadow: inset 0 0 3px black;
+}
+
+#raiseRange{
+    --amount: 50%;
+    appearance: none;
+    height: 10px;
+    margin: 15px 0;
+    background-image: linear-gradient(90deg, #dd0 var(--amount), #ccc var(--amount));
+}
+#raiseRange::-webkit-slider-thumb{
+    appearance: none;
+    height: 30px;
+    width: 5px;
+    background-color: #090;
 }
