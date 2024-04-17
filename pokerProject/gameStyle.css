@@ -8,8 +8,8 @@ body{
     top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80%;
-    height: 80%;
+    width: 75%;
+    height: 75%;
 }
 #table{
     position: absolute;
@@ -17,7 +17,7 @@ body{
     border-radius: 100vh;
     top: 50%;
     left: 50%;
-    width: 80%;
+    width: 70%;
     border-style: solid;
     border-width: 3vw;
     border-color: #000;
@@ -92,6 +92,31 @@ body{
     }
 }
 
+.cards{
+    --cardImg1: '';
+    --cardImg2: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    aspect-ratio: 1/1;
+    transform: scale(0.75) translate(-50%, -50%);
+    &::before{
+        content: var(--cardImg1);
+        transform: scale(0.25) rotate(0deg) translate(-150%, -175%);
+        width: fit-content;
+        position: absolute;
+        z-index: 1;
+    }
+    &::after{
+        content: var(--cardImg2);
+        transform: scale(0.25) rotate(-15deg) translate(-100%, -205%);
+        width: fit-content;
+        position: absolute;
+    }
+}
+
+
 .entity{
     color: #fff;
     width: 13%;
@@ -102,6 +127,11 @@ body{
     font-size: 20px;
     background: rgba(0,0,0,0.35);
     align-items: center;
+}
+
+.entity.bet{
+    position: absolute;
+    top: 50%;
 }
 
 .money{
@@ -154,10 +184,11 @@ body{
     }
 }
 
+
 #buttons{
     position: absolute;
     width: 100%;
-    bottom: 100px;
+    bottom: 10%;
 }
 
 #actionButtons{
@@ -192,7 +223,25 @@ body{
 }
 
 .onTurn{
-    background: red;
+    background: red !important;
+}
+
+.bet{
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    width: 100%;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-evenly;
+    text-align: center;
+    background-color: rgba(0,0,0,0.3);
+}
+
+.bet img{
+    border-style: none;
+    width: 35%;
+    aspect-ratio: 1/1;
 }
 
 #raiseBar{
