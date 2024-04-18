@@ -17,12 +17,6 @@ function shuffle(deck){
     }
 }
 
-function getHandScore(hand){
-   var score = 0;
-    hand.map((card) =>score += getRanksIndex(card));
-    return score;
-}
-
 function getHandMin(){
     return getHandScore(['C2', 'H3']);
 }
@@ -135,18 +129,6 @@ function getSuitsIndex(card){
     return SUITS.indexOf(card.charAt(0));
 }
 
-//sortiert das Karten Array zb.: ['H2', 'CQ'] nach index des constanten Arrays RANKS
-function sortCardsHighToLow(cardsArray){
-    for(var i = 0; i < cardsArray.length; i++){
-        for(var j = 0; j < cardsArray.length-1; j++){
-            if(getRanksIndex(cardsArray[j]) < getRanksIndex(cardsArray[j+1])){
-                var temp = cardsArray[j];
-                cardsArray[j] = cardsArray[j+1];
-                cardsArray[j+1] = temp;
-            }
-        }
-    }
-}
 
 //zählte wie oft ein Rang im Karten Array vor kommt und gibt ein Array mit häufigkeiten pro index zurück
 function countRanks(cardsArray){
@@ -176,10 +158,30 @@ function getScoreOfHighestFiveCardsOfFlush(cardsArray, targetSuit){
     }
     return score;
 }
+    
+//sortiert das Karten Array zb.: ['H2', 'CQ'] nach index des constanten Arrays RANKS
+function sortCardsHighToLow(cardsArray){
+    for(var i = 0; i < cardsArray.length; i++){
+        for(var j = 0; j < cardsArray.length-1; j++){
+            if(getRanksIndex(cardsArray[j]) < getRanksIndex(cardsArray[j+1])){
+                var temp = cardsArray[j];
+                cardsArray[j] = cardsArray[j+1];
+                cardsArray[j+1] = temp;
+            }
+        }
+    }
+}
 
-//Gibt score und liste der 2 höchsten Paare zurueck
 
-//TODO Dokumentation
+
+function getHandScore(hand){
+    sortCardsHighToLow(hand);
+    return [(getRanksIndex(hand[0])*15) + getRanksIndex(hand[1]), hand];
+}
+
+    //Gibt score und liste der 2 höchsten Paare zurueck
+    
+    //TODO Dokumentation
 
 function getTwoPairScore(cardsArray){
     sortCardsHighToLow(cardsArray);
@@ -209,15 +211,15 @@ function getTwoPairScore(cardsArray){
 function getPairScore(cardsArray){
     sortCardsHighToLow(cardsArray);
     var score = 0;
-    var threeNumbers = new Array();
+    var pairNumbers = new Array();
     var rankCounts = countRanks(cardsArray);
     var pairRankIdx = rankCounts.reverse().indexOf(2);    //Nach 3 von hinten suchen um den hohen rang zu erhalten
     if (pairRankIdx != -1){
         pairRankIdx = rankCounts.length - 1 - pairRankIdx;
         score = (pairRankIdx+1) * 100;
-        threeNumbers.push(RANKS[pairRankIdx]);
+        pairNumbers.push(RANKS[pairRankIdx]);
     }
-    return [score, threeNumbers];
+    return [score, pairNumbers];
 }
 
 //Gibt score und liste des höchsten Drillings zurueck
@@ -270,7 +272,7 @@ function getFullHouseScore(cardsArray){
     var [score2, arr2] = getPairScore(cardsArray);
     if (score1 > 0 && score2 > 0){
         arr1.push(arr2[0]);
-        return [score1*15 + score2 + getFlushMax(), arr1];
+        return [(score1*15 + score2 + getFlushMax()), arr1];
     }
     return [0, []]
 }
@@ -306,7 +308,7 @@ function getStraightScore(cardsArray){
         }
     }
     if (score > 0){
-        return [(score*100) + getThreeMax(), straight];
+        return [((score*100) + getThreeMax()), straight];
     }
     return [0, []];
 }

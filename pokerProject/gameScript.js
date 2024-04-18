@@ -39,6 +39,9 @@ class player{
         this.#idx = idx;
         this.#money = money;
     }
+    getKicker(){
+        return getHandScore(this.#hand);
+    }
     setBlind(button){
         const playButtonElement = document.getElementById(this.#htmlId).getElementsByClassName('playButton')[0];
         playButtonElement.innerHTML = button;
@@ -57,6 +60,9 @@ class player{
         }
     }
     updateScoreAndComb(communityCards){
+        if(this.#state == 'fold' || this.#state == 'dead'){
+            return;
+        }
         [this.#score, this.#winComb, this.#winType] = getCardsScore(this.#hand, communityCards);
     }
     getWinComb(){
@@ -74,11 +80,19 @@ class player{
         return this.#state;
     }
     backIn(){
-        this.#state = 'in';
-        document.getElementById(this.#htmlId).style.background = 'rgba(0,0,0,0.35)';
+        if(this.#state != 'dead'){
+            this.#state = 'in';
+            document.getElementById(this.#htmlId).style.background = 'rgba(0,0,0,0.35)';
+        }else{
+            this.score = 0;
+            document.getElementById(this.#htmlId).style.background = '#a00';
+        }
     }
     isSelf(){
         return this.#isSelf;
+    }
+    resetHand(){
+        this.#hand = new Array();
     }
     getBlind(){
         return this.#blind;
@@ -87,9 +101,9 @@ class player{
         return this.#bet;
     }
     setBet(bet){
-        if(bet > this.#money){
+        if(bet >= this.#money){
             this.#state = 'allIn';
-            this.#bet = this.money;
+            this.#bet = this.#money;
             return;
         }
         this.#bet = bet;
@@ -108,6 +122,9 @@ class player{
     }
     getHand(){
         return this.#hand;
+    }
+    kill(){
+        this.#state = 'dead';
     }
     getMoney(){
         return this.#money;
@@ -136,13 +153,9 @@ function getCardsScore(hand, community){
     var cards = hand.concat(community);
     var winComb = new Array();
     var winType = '';
-    var i = 0;
     var score = 0;
-    while(true){
-        [score, winComb] = scoreFunctions[i++](cards);
-        if(score > 0){
-            break;
-        }
+    for(var i = 0; i < scoreFunctions.length && score < 1; i++){
+        [score, winComb] = scoreFunctions[i](cards);
     }
     if(score == getRoyalStraightFlushMax()){
         winType = 'royal';
@@ -172,10 +185,6 @@ function getCardsScore(hand, community){
         winType = 'hand';
     }
     return [score, winComb, winType];
-}
-
-function errorFunction(){
-    document.body.innerHTML = "Konnte Gegner Menge nicht erhalten";
 }
 
 function buildPage(enemies, player){
@@ -228,7 +237,7 @@ function drawPlayer(player){
         "</div>" +
         "</div>";
     var htmlElement = document.getElementById('player');
-    htmlElement.style.offsetDistance = 100/10*4+18.5 + "%";
+    htmlElement.style.offsetDistance = (100/10*4+18.5) + "%";
     player.setHTMLID('player');
 }
 
@@ -260,12 +269,51 @@ function sortByEntityIdx(entityList){
     }
 }
 
-function setEntityBlinds(entityList){
-    for(var i=0; i < entityList.length; i++){
+function mudolo(x, y){
+    return ((x+y)%y);
+}
+
+function countSkippedBlinds(entityList, blindIdx){
+    var tempIdx = 0;
+    var entLen = entityList.length;
+
+    for(var i=0; i < entLen; i++){
+        if(entityList[mudolo(blindIdx+i, entLen)].getState() == 'dead'){
+            continue;
+        }
+        tempIdx = mudolo(blindIdx+i, entLen);
+        break;
+    }
+    return tempIdx;
+}
+
+function setEntityBlinds(entityList, blindIdx){
+    var tempIdx = 0;
+    var entLen = entityList.length;
+
+    for(var i=0; i < entLen; i++){
         entityList[i].setBlind('');
     }
-    entityList[blindIdx%entityList.length].setBlind('BB');
-    entityList[(blindIdx-1)%entityList.length].setBlind('SB');
+
+    for(var i=0; i < entLen; i++){
+        if(entityList[mudolo(blindIdx+i, entLen)].getState() == 'dead'){
+            continue;
+        }
+        tempIdx = mudolo(blindIdx+i, entLen);
+        entityList[mudolo(blindIdx+i, entLen)].setBlind('BB');
+        break;
+    }
+
+    for(var i=0; i < entLen; i++){
+        if(entityList[mudolo(tempIdx-i-1, entLen)].getState() == 'dead'){
+            continue;
+        }
+        entityList[mudolo(tempIdx-i-1, entLen)].setBlind('SB');
+        break;
+    }
+
+    return tempIdx;
+
 }
 
 function addComCard(){
@@ -351,10 +399,15 @@ function drawPlayerCards(entity, canSee){
     }else{
         var cards = ['B1', 'B1'];
     }
-    if(cards[0] != 0 && cards[1] != 0){
+    if(cards[0] != null && cards[1] != null){
         htmlElement = document.getElementById(entity.getHTMLID()).getElementsByClassName('cards')[0];
         htmlElement.style.setProperty('--cardImg1', 'url(./cardsSVGs/' + cardToImgNameConv(cards[0]) + '.svg)');
         htmlElement.style.setProperty('--cardImg2', 'url(./cardsSVGs/' + cardToImgNameConv(cards[1]) + '.svg)');
+    }else{
+        htmlElement = document.getElementById(entity.getHTMLID()).getElementsByClassName('cards')[0];
+        htmlElement.style.setProperty('--cardImg1', 'none');
+        htmlElement.style.setProperty('--cardImg2', 'none');
+
     }
 }
 
@@ -364,9 +417,9 @@ async function getAction(resolve, entity, betTime){
     var timer = 0;
     if(entity.getName() == '-1'){
         action = calculateAction(entity);
-        await sleep(100);
+        await sleep(10);
     }else{
-        while(input == '' && timer <= betTime*1000){
+        while(input == '' && timer <= betTime){
             await sleep(10);
             timer+=10;
         }
@@ -403,7 +456,7 @@ function updateEntitys(entityList){
 
 function processAction(entity, action, bet){
     switch(action[0]){
-        case 'fold', '':
+        case 'fold': case '':
             entity.fold();
             break;
         case 'call':
@@ -430,6 +483,10 @@ function updateTable(entityList, pot){
 
 function removeAllCards(entityList){
     for(var j = 0; j < entityList.length; j++){
+        if(entityList[j].getState() == 'dead'){
+            entityList[j].resetHand();
+            continue;
+        }
         htmlElement = document.getElementById(entityList[j].getHTMLID());
         htmlElement.style.setProperty('--cardImg1', '');
         htmlElement.style.setProperty('--cardImg2', '');
@@ -438,6 +495,9 @@ function removeAllCards(entityList){
 
 function giveCards(deck, entityList, handIdx){
     for(var i = 0; i < entityList.length; i++){
+        if(entityList[i].getState() == 'dead'){
+            continue;
+        }
         entityList[i].setHand(handIdx, deck.shift());
     }
 }
@@ -447,8 +507,6 @@ function resetComCards(){
 }
 
 function setWinner(entity, pot){
-    console.log(entity.getScore())
-    console.log(entity.getWinComb())
     var htmlElement = document.getElementById(entity.getHTMLID());
     document.getElementById('tableText').innerHTML = entity.getWinType();
     htmlElement.style.background = '#0f0';
@@ -456,14 +514,14 @@ function setWinner(entity, pot){
     entity.addMoney(pot);
 }
 
-async function game(resolve, entityList, blind){
+async function game(resolve, entityList, blind, blindIdx){
     communityCards = new Array();
     var pot = 0;
     var turn = 0;
     var bet = blind;
     globalBet = bet;
     sortByEntityIdx(entityList);
-    setEntityBlinds(entityList);
+    setEntityBlinds(entityList, blindIdx);
     for(var i = 0; i < entityList.length; i++){
         if(entityList[i].getBlind() == 'BB'){
             entityList[i].setBet(blind);
@@ -477,7 +535,7 @@ async function game(resolve, entityList, blind){
         if(entityList[i].isSelf()){
             drawPlayerCards(entityList[i], true);
         }else{
-            drawPlayerCards(entityList[i], false);
+            drawPlayerCards(entityList[i], true);
         }
     }
     var lastBetIdx = blindIdx+1;
@@ -485,9 +543,10 @@ async function game(resolve, entityList, blind){
     while(turn < 4){
         doTurn(turn);
         for(var i = startIdx; i < entityList.length+lastBetIdx; i++){
-            var entity = entityList[i%entityList.length];
             updateEntitys(entityList);
-            if(entity.getState() == 'fold'){
+            var entity = entityList[mudolo(i, entityList.length)];
+            var state = entity.getState();
+            if(state == 'fold' || state == 'dead'){
                 continue;
             }
             var currAction = new Promise(resolve => getAction(resolve, entity, 5));
@@ -507,16 +566,44 @@ async function game(resolve, entityList, blind){
         lastBetIdx = 0;
         turn++;
     }
-    var winIdx = 0;
-    for(var i = 0; i < entityList.length; i++){
-        entityList[i].updateScoreAndComb(communityCards);
-        if(entityList[i].getScore() > entityList[winIdx].getScore()){
-            winIdx = i;
-        }
+    winEntitys = getWinner(entityList);
+    if(winEntitys.length == 1){
+        setWinner(winEntitys[0], pot);
     }
-    setWinner(entityList[winIdx], pot);
     updateTable(entityList, 0);
     resolve();
+}
+
+function getWinner(entityList){
+    var winEntitys = new Array();
+    var tempEntitys = new Array();
+    var winScore = 0;
+    for(var i = 0; i < entityList.length; i++){
+        if(entityList[i].getState() == 'fold' || entityList[i].getState() == 'dead'){
+            continue;
+        }
+        entityList[i].updateScoreAndComb(communityCards);
+        entScore = entityList[i].getScore(); 
+        if(entScore > winScore){
+            tempEntitys = new Array(entityList[i]);
+            winScore = entScore;
+        }else if(entScore == winScore){
+            tempEntitys.push(entityList[i]);
+        }
+    }
+    winScore = 0;
+    if(tempEntitys.length > 1){
+        for(var i = 0; i < tempEntitys.length; i++){
+            if(tempEntitys[i].getKicker()[0] > winScore){
+                winEntitys = new Array(tempEntitys[i]);
+            }else if(tempEntitys[i].getKicker()[0] == winScore){
+                winEntitys.push(tempEntitys[i]);
+            }
+        }
+    }else{
+        winEntitys = tempEntitys;
+    }
+    return winEntitys;
 }
 
 function toggleRaiseBar(on){
@@ -556,19 +643,31 @@ function cloneArray(arr){
 
 function backIntoGame(entityList){
     for(var j = 0; j < entityList.length; j++){
+        if(entityList[j].getState() == 'allIn'){
+            if(entityList[j].getMoney() > 0){
+                entityList[j].backIn();
+                continue;
+            }else{
+                entityList[j].kill();
+                continue;
+            }
+        }
         entityList[j].backIn();
     }
 }
 
+function resetGame(entityList){
+    backIntoGame(entityList);
+    resetComCards();
+    removeAllCards(entityList);
+}
+
 addEventListener('DOMContentLoaded', function(){
-    var blindIdx = 0;
     const params = new URLSearchParams(window.location.search);
     var enemies = createBots(parseInt(params.get('enemCount')));
-    var self = new player(1000, 5, 'Paul', null, true); 
-    if(enemies == null){
-        errorFunction();
-        return;
-    }
+    var blind = 50;
+    var blindIdx = 1;
+    var self = new player(1000, 5, 'Paul', null, true);
     var entityList = enemies.concat(self);
     buildPage(enemies, self);
     addListeners();
@@ -576,14 +675,11 @@ addEventListener('DOMContentLoaded', function(){
         this.parentElement.removeChild(this);
         while(true){
             deck = getNewDeck();
-            var blind = 50;
-            var currGame = new Promise(resolve => game(resolve, entityList, blind));
-            await currGame
-            blindIdx = (++blindIdx)%entityList.length;
-            await sleep(10000);
-            resetComCards();
-            removeAllCards(entityList);
-            backIntoGame(entityList);
+            var currGame = new Promise(resolve => game(resolve, entityList, blind, blindIdx));
+            await currGame;
+            blindIdx = mudolo(countSkippedBlinds(entityList, blindIdx), entityList.length)+1;
+            await sleep(20);
+            resetGame(entityList);
         }
     })
 })
