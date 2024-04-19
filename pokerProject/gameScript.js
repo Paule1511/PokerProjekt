@@ -4,7 +4,7 @@ input = "";
 inputAmount = 0;
 globalBet = 0;
 globalMoney = 0;
-botSpeed = 100;
+botSpeed = 1000;
 nextGameSpeed = 1000;
 
 //liste der Scoring Funktionen
@@ -520,13 +520,10 @@ function processAction(entity, action, bet){
             entity.fold();
             break;
         case 'call':
-            if(entity.getBet() < bet){
-                entity.addMoney(entity.getBet());
-            }
             entity.setBet(bet);
             break;
         case 'raise':
-            entity.setBet(action[1]-bet);
+            entity.setBet(bet);
             break;
     }
     return entity.getBet();
@@ -548,12 +545,9 @@ function updateTable(entityList, pot){
 
 //löscht alle hand Karten vom bildschirm da Communitykarten im main Loop Gelöscht werden
 function removeAllCards(entityList){
-    for(var j = 0; j < entityList.length; j++){
-        if(entityList[j].getState() == 'dead'){
-            entityList[j].resetHand();
-            continue;
-        }
-        htmlElement = document.getElementById(entityList[j].getHTMLID());
+    for(var i = 0; i < entityList.length; i++){
+        entityList[i].resetHand();
+        htmlElement = document.getElementById(entityList[i].getHTMLID());
         htmlElement.style.setProperty('--cardImg1', '');
         htmlElement.style.setProperty('--cardImg2', '');
     }
@@ -806,8 +800,11 @@ async function game(resolve, entityList, blind, blindIdx){
             }
 
             //fügt pot die setzmänge hinzu und entfernt diese vom Entity
-            pot += processAction(entity, action, bet);
-            entity.removeMoney(entity.getBet());
+            processAction(entity, action, bet);
+        }
+        for(var i = 0; i < entityList.length; i++){
+            pot += entityList[i].getBet();
+            entityList[i].removeMoney(entityList[i].getBet());
         }
         //räumt setz runde auf
         entitysIn = getInCount(entityList)
