@@ -844,7 +844,7 @@ addEventListener('DOMContentLoaded', function(){
     var enemies = createBots(parseInt(params.get('enemCount')));
     var blind = 50;
     var blindIdx = 1;
-    var self = new player(1000, 5, 'You', null, false);
+    var self = new player(1000, 5, 'You', null, true);
     var entityList = enemies.concat(self);
 
     drawEntitys(enemies, self);
