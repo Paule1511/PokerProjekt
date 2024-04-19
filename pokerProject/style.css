@@ -73,3 +73,7 @@ h1#title{
     color: red;
     text-shadow: #f900f9 1px 0 10px;
 }
+
+.main-text a{
+    color: red !important;
+}

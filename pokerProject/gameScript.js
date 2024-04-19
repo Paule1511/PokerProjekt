@@ -767,7 +767,7 @@ async function game(resolve, entityList, blind, blindIdx){
         if(entityList[i].isSelf()){
             drawPlayerCards(entityList[i], true);
         }else{
-            drawPlayerCards(entityList[i], true);
+            drawPlayerCards(entityList[i], false);
         }
     }
     //geht setz runden durch
