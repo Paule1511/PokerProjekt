@@ -4,6 +4,8 @@ input = "";
 inputAmount = 0;
 globalBet = 0;
 globalMoney = 0;
+botSpeed = 100;
+nextGameSpeed = 1000;
 
 //liste der Scoring Funktionen
 const scoreFunctions = new Array(getStraightFlushScore, getQuadsScore, getFullHouseScore,
@@ -116,7 +118,7 @@ class player{
         return this.#bet;
     }
     setBet(bet){
-        if(bet >= this.#money){
+        if(bet > this.#money){
             this.#state = 'allIn';
             this.#bet = this.#money;
             return;
@@ -318,15 +320,17 @@ function setEntityBlinds(entityList, blindIdx){
 
     for(var i=0; i < entLen; i++){
         if(entityList[mudolo(blindIdx+i, entLen)].getState() == 'dead'){
+            console.log("skip");
             continue;
         }
         tempIdx = mudolo(blindIdx+i, entLen);
         entityList[mudolo(blindIdx+i, entLen)].setBlind('BB');
         break;
     }
-
+    
     for(var i=0; i < entLen; i++){
         if(entityList[mudolo(tempIdx-i-1, entLen)].getState() == 'dead'){
+            console.log("skip");
             continue;
         }
         entityList[mudolo(tempIdx-i-1, entLen)].setBlind('SB');
@@ -455,7 +459,7 @@ function drawPlayerCards(entity, canSee){
         htmlElement.style.setProperty('--cardImg2', 'none');
     }
     htmlElement.style.setProperty('--cardBright1', '1');
-    htmlElement.style.setProperty('--cardBright1', '1');
+    htmlElement.style.setProperty('--cardBright2', '1');
 }
 
 //hollt Aktion des Spielers/Bots
@@ -465,9 +469,9 @@ async function getAction(resolve, entity, betTime, communityCards, bet){
     var action = ['fold', 0];
     setTurn(entity, true);
     var timer = 0;
-    if(entity.getName() == '-1'){
+    if(!entity.isSelf()){
         action = calculateAction(entity, communityCards, bet);
-        await sleep(1000);
+        await sleep(botSpeed);
     }else{
         while(input == '' && timer <= betTime){
             await sleep(10);
@@ -516,13 +520,13 @@ function processAction(entity, action, bet){
             entity.fold();
             break;
         case 'call':
-            if(entity.getBet() <= bet){
+            if(entity.getBet() < bet){
                 entity.addMoney(entity.getBet());
             }
             entity.setBet(bet);
             break;
         case 'raise':
-            entity.setBet(action[1] - entity.getBet());
+            entity.setBet(action[1]-bet);
             break;
     }
     return entity.getBet();
@@ -619,6 +623,7 @@ function focusWinCards(entity, communityCards){
 function setWinner(entity, pot, communityCards){
     var htmlElement = document.getElementById(entity.getHTMLID());
     document.getElementById('tableText').innerHTML = getWinnerText(entity);
+    drawPlayerCards(entity, true);
     focusWinCards(entity, communityCards);
     htmlElement.style.background = '#0f0';
     entity.addMoney(pot);
@@ -712,13 +717,10 @@ function addListeners(){
 //wenn "allIn" Entitys kein neues geld haben werden sie "dead"
 function backIntoGame(entityList){
     for(var j = 0; j < entityList.length; j++){
-        if(entityList[j].getState() == 'allIn'){
-            if(entityList[j].getMoney() > 0){
-                entityList[j].backIn();
-                continue;
-            }else{
+        if(entityList[j].getState() != 'in'){
+            if(entityList[j].getMoney() < 1){
+                console.log(entityList[j].getState());
                 entityList[j].kill();
-                continue;
             }
         }
         entityList[j].backIn();
@@ -727,9 +729,9 @@ function backIntoGame(entityList){
 
 //setzt spiel zurück !!Nicht Entitys!!
 function resetGame(entityList){
+    removeAllCards(entityList);
     backIntoGame(entityList);
     resetComCards();
-    removeAllCards(entityList);
 }
 
 
@@ -753,12 +755,8 @@ async function game(resolve, entityList, blind, blindIdx){
     for(var i = 0; i < entityList.length; i++){
         if(entityList[i].getBlind() == 'BB'){
             entityList[i].setBet(blind);
-            pot += blind;
-            entityList[i].removeMoney(entityList[i].getBet());
         }else if(entityList[i].getBlind() == 'SB'){
             entityList[i].setBet(blind/2);
-            pot += blind/2;
-            entityList[i].removeMoney(entityList[i].getBet());
         }
     }
     giveCards(deck, entityList, 0);
@@ -775,6 +773,17 @@ async function game(resolve, entityList, blind, blindIdx){
         doTurn(turn, communityCards);
         //alle spieler durchgehen bis keiner mehr setzt
         for(var i = startIdx; i < entityList.length+lastBetIdx; i++){
+            var entity = entityList[mudolo(i, entityList.length)];
+            if(entity.isSelf()){
+                globalMoney = entity.getMoney();
+            }
+            updateEntitys(entityList);
+            //überspringt spieler die nicht "in" sind
+            var state = entity.getState();
+            if(state != 'in'){
+                continue;
+            }
+            
             //wenn keine entitys mehr "in" sind wird die schleife unterbrochen
             entitysIn = getInCount(entityList);
             if(entitysIn < 2){
@@ -782,18 +791,8 @@ async function game(resolve, entityList, blind, blindIdx){
                 break;
             }
 
-            updateEntitys(entityList);
 
-            var entity = entityList[mudolo(i, entityList.length)];
-            if(entity.isSelf()){
-                globalMoney = entity.getMoney();
-            }
 
-            //überspringt spieler die nicht "in" sind
-            var state = entity.getState();
-            if(state != 'in'){
-                continue;
-            }
 
             //fragt Aktion des Spielers/Bots ab
             var currAction = new Promise(resolve => getAction(resolve, entity, 10, communityCards, bet));
@@ -813,13 +812,13 @@ async function game(resolve, entityList, blind, blindIdx){
         //räumt setz runde auf
         entitysIn = getInCount(entityList)
         updateTable(entityList, pot);
+        if(entitysIn < 2){
+            break;
+        }
         bet = 0;
         startIdx = 0;
         lastBetIdx = 0;
         turn++;
-        if(entitysIn < 2){
-            break;
-        }
     }
     //Kontrolliert gewinner und wenn alle "fold" sind wird letzer "in" gewinner
     winEntitys = getWinner(entityList);
@@ -848,7 +847,7 @@ addEventListener('DOMContentLoaded', function(){
     var enemies = createBots(parseInt(params.get('enemCount')));
     var blind = 50;
     var blindIdx = 1;
-    var self = new player(1000, 5, 'Paul', null, true);
+    var self = new player(1000, 5, 'You', null, false);
     var entityList = enemies.concat(self);
 
     drawEntitys(enemies, self);
@@ -864,7 +863,7 @@ addEventListener('DOMContentLoaded', function(){
             await currGame;
             //zählt blinds eins hoch
             blindIdx = mudolo(countSkippedBlinds(entityList, blindIdx), entityList.length)+1;
-            await sleep(5000);
+            await sleep(nextGameSpeed);
             //setzt Spiel zurück
             resetGame(entityList);
         }
