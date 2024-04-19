@@ -10,6 +10,7 @@ function getFlushMax(){
     return score;
 }
 
+//mischt Array durch !!!NICHT EIGENER Algorithmus. aus internet entnommen und geändert
 function shuffle(deck){
     for(var i = 0; i < deck.length; i++){
         var j = Math.floor(Math.random() * (i+1));
@@ -18,13 +19,16 @@ function shuffle(deck){
 }
 
 function getHandMin(){
-    return getHandScore(['C2', 'H3']);
+    var [score, comb] = getHandScore(['C2', 'H3']);
+    return score;
 }
 
 function getHandMax(){
-    return getHandScore(['HA', 'CK']);
+   var [score, comb] = getHandScore(['HA', 'CK']);
+   return score;
 }
 
+//erstellt neues Deck
 function getNewDeck(){
     var deck = new Array();
     for(var i = 0; i < RANKS.length; i++){
@@ -366,4 +370,6 @@ function testMinMax(){
     console.log("Royal Score: ", score)
 }
 
-testMinMax();
+const comb = ['HA', 'S4', 'C3', 'D2', 'H9', 'HK', 'C5']
+
+// console.log(getStraightScore(comb));

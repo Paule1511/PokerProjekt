@@ -97,7 +97,9 @@ body{
 
 .cards{
     --cardImg1: none;
+    --cardBright1: 1;
     --cardImg2: none;
+    --cardBright2: 1;
     position: absolute;
     top: 0;
     left: 0;
@@ -106,6 +108,7 @@ body{
     transform: scale(0.75) translate(-50%, -50%);
     &::before{
         content: var(--cardImg1);
+        filter: brightness(var(--cardBright1));
         transform: scale(0.25) rotate(0deg) translate(-150%, -175%);
         width: fit-content;
         position: absolute;
@@ -113,6 +116,7 @@ body{
     }
     &::after{
         content: var(--cardImg2);
+        filter: brightness(var(--cardBright2));
         transform: scale(0.25) rotate(-15deg) translate(-100%, -205%);
         width: fit-content;
         position: absolute;
@@ -121,6 +125,7 @@ body{
 
 
 .entity{
+    --countdown: 0;
     color: #fff;
     width: 13%;
     border-radius: 10px;
@@ -187,7 +192,6 @@ body{
     }
 }
 
-
 #buttons{
     position: absolute;
     width: 100%;
@@ -226,7 +230,7 @@ body{
 }
 
 .onTurn{
-    background: red !important;
+    background: linear-gradient(red var(--countdown), green var(--countdown)) !important;
 }
 
 .bet{
@@ -303,18 +307,24 @@ body{
     position: absolute;
     display: flex;
     flex-direction: row;
-    top: 50%;
-    left: 50%;
+    top: 50.25%;
+    left: 49.75%;
     transform: translate(-50%, -50%);
-    width:67.5%;
-    aspect-ratio: 2/1;
+    width: 67.5%;
+    aspect-ratio: 10/3;
 }
 
 .community{
     width: 20%;
 }
 
+
 .community img{
-    transform: translate(-175%, -115%);
-    scale: 20%;
+    transform: translate(25%, 25%);
+    height: auto;
+    max-width: 70%;
+}
+
+.community.unfocus img{
+    filter: brightness(0.3);
 }
